@@ -8,8 +8,6 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-const { exec } = require('child_process');
-
 export default {
   // cloudflare worker entry point
   async fetch(request, env, ctx) {
@@ -25,6 +23,27 @@ export default {
         })
       );
     } else if (url.pathname === '/check') {
+      // get the url from the query string
+      let host = url.searchParams.get('url');
+
+      // validate the url
+      if (!host) {
+        return new Response(JSON.stringify({ error: 'url is required' }), {
+          status: 400,
+        });
+
+        // check if the url is valid
+      } else if (!/^https?:\/\//.test(host)) {
+        return new Response(JSON.stringify({ error: 'url is invalid' }), {
+          status: 400,
+        });
+      }
+
+      // check if the urls is up and return a json response
+      const response = await fetch(host);
+      return new Response(
+        JSON.stringify({ status: response.status, data: await response.text() })
+      );
     } else {
       // return a json response that health is ok
       return new Response(JSON.stringify({ status: 'ok' }));
