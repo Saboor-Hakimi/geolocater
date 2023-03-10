@@ -8,11 +8,15 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+const { exec } = require('child_process');
+
 export default {
   // cloudflare worker entry point
   async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
     // the /ip endpoint returns the IP address of the request
-    if (request.url.endsWith('/ip')) {
+    if (url.pathname === '/ip') {
       return new Response(
         JSON.stringify({
           ip:
@@ -20,6 +24,7 @@ export default {
             request.headers.get('CF-Connecting-IP'),
         })
       );
+    } else if (url.pathname === '/check') {
     } else {
       // return a json response that health is ok
       return new Response(JSON.stringify({ status: 'ok' }));
